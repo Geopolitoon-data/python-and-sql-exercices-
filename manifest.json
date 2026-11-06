@@ -1,0 +1,20 @@
+{
+ "name": "DS Practice",
+ "short_name": "DS Practice",
+ "start_url": ".",
+ "display": "standalone",
+ "background_color": "#f3f4f1",
+ "theme_color": "#1f5f5b",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}

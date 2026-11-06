@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5f5b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>DS Practice</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root {
+  --bg: #f3f4f1; --surface: #ffffff; --line: #dcdfd8; --ink: #1d2320; --muted: #5d6762;
+  --accent: #1f5f5b; --accent-ink: #ffffff; --accent-soft: #dcebe8;
+  --py: #2f6aa8; --sql: #a8641b;
+  --good: #2c7a3f; --good-soft: #e1f1e4; --bad: #b3372d; --bad-soft: #f8e3e0;
+  --term: #171b1a; --term-ink: #dfe6e2; --term-dim: #8a9690;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121615; --surface: #1a1f1e; --line: #2c3331; --ink: #e4e9e6; --muted: #9aa5a0;
+  --accent: #5fb3a9; --accent-ink: #0d1312; --accent-soft: #1f3532;
+  --py: #7aaee6; --sql: #e0a35c;
+  --good: #6cc183; --good-soft: #1c3424; --bad: #ef8a7f; --bad-soft: #3a201d;
+  --term: #0c0f0e; color-scheme: dark;
+} }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font); }
+button { font: inherit; color: inherit; cursor: pointer; }
+code, pre { font-family: var(--mono); font-size: 14px; }
+p code, li code, .prompt code { background: var(--accent-soft); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+
+.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px; padding: 0 12px; padding-top: env(safe-area-inset-top); min-height: 54px; }
+.top h1 { font-size: 17px; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.back { border: 0; background: none; font-size: 26px; line-height: 1; padding: 6px 10px 8px 2px; color: var(--accent); }
+.status { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.status.ok { color: var(--good); }
+
+main { max-width: 720px; margin: 0 auto; padding: 14px 16px calc(40px + env(safe-area-inset-bottom)); }
+
+/* home */
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 14px; }
+.seg button { border: 0; background: none; padding: 10px; border-radius: 9px; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.card { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r); padding: 13px 14px; min-height: 52px; }
+.card .t { flex: 1; font-weight: 500; }
+.card .n { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.card .chev { color: var(--muted); font-size: 20px; }
+.card.saved { border-color: var(--accent); }
+.num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; font-size: 13px; font-weight: 600; flex: none; }
+.sub { color: var(--muted); font-size: 14px; margin: 4px 0 12px; }
+
+/* exercise */
+.vbar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 6px; margin-bottom: 12px; }
+.vbar button { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; width: 44px; height: 38px; font-size: 18px; }
+.vbar button:disabled { opacity: .35; }
+.vbar span { flex: 1; text-align: center; font-size: 14px; color: var(--muted); }
+.prompt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 14px; }
+.prompt pre, .out pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.prompt pre { background: var(--bg); padding: 8px 10px; border-radius: 6px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); margin-top: 8px; }
+summary { padding: 11px 14px; font-weight: 500; color: var(--accent); cursor: pointer; }
+details > div { padding: 0 14px 10px; font-size: 15px; }
+.tbl { overflow: auto; }
+.out .tbl { max-height: 240px; }
+table { border-collapse: collapse; font-size: 13px; font-family: var(--mono); }
+th, td { border-bottom: 1px solid var(--line); padding: 4px 10px 4px 0; text-align: left; white-space: nowrap; }
+
+.ed { margin-top: 12px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--term); }
+textarea { display: block; width: 100%; min-height: 190px; border: 0; resize: vertical; background: var(--term); color: var(--term-ink);
+  font: 16px/1.45 var(--mono); padding: 12px; tab-size: 4; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+textarea:focus { outline: none; }
+.keys { display: flex; gap: 6px; overflow-x: auto; padding: 8px; background: var(--surface); border-top: 1px solid var(--line);
+  position: sticky; bottom: 0; scrollbar-width: none; }
+.keys button { flex: none; min-width: 42px; height: 40px; border: 1px solid var(--line); background: var(--bg);
+  border-radius: 8px; font-family: var(--mono); font-size: 16px; padding: 0 8px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 12px; font-weight: 600; min-height: 48px; text-decoration: none; color: var(--ink); text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:disabled { opacity: .5; }
+.row2 { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.row2 .btn { flex: 1; font-weight: 500; }
+
+.out { margin-top: 10px; background: var(--term); color: var(--term-ink); border-radius: var(--r); padding: 12px; font-family: var(--mono); font-size: 14px; }
+.out:empty { display: none; }
+.out pre { margin: 0 0 8px; }
+.dim { color: var(--term-dim); }
+.err { color: #ff9b90; }
+.chk { padding: 3px 0; }
+.chk.pass { color: #8fdca3; } .chk.fail { color: #ff9b90; }
+.chk small { display: block; color: var(--term-dim); padding-left: 20px; overflow-wrap: anywhere; }
+.out table th, .out table td { border-color: #2a302e; }
+.verdict { margin-top: 10px; border-radius: var(--r); padding: 12px 14px; }
+.verdict.good { background: var(--good-soft); color: var(--good); }
+.verdict h3 { margin: 0 0 4px; font-size: 17px; }
+.verdict p { color: var(--ink); margin: 6px 0; font-size: 15px; }
+.hint { background: var(--accent-soft); border-radius: 8px; padding: 9px 12px; margin-top: 8px; font-size: 15px; }
+.sol pre { background: var(--term); color: var(--term-ink); padding: 12px; border-radius: 8px; overflow-x: auto; }
+.lbl { font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="back" id="back" aria-label="Back" hidden>‹</button>
+  <h1 id="title">DS Practice</h1>
+  <span class="status" id="status">Loading…</span>
+</header>
+<main id="view"><p class="sub">Loading exercises…</p></main>
+
+<script>
+"use strict";
+let D = null;                 // data.json
+const drafts = {};            // code typed this visit, per exercise version
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function md(src) {
+  return String(src || "").split(/```/).map((b, i) => {
+    if (i % 2) return `<pre><code>${esc(b.replace(/^\w*\n/, "").replace(/\n$/, ""))}</code></pre>`;
+    return b.split(/\n{2,}/).map(par => {
+      const lines = par.trim().split("\n");
+      if (!lines[0]) return "";
+      const inline = t => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+        .replace(/(^|[\s(])\*([^\s*<][^*<]*?[^\s*<]|[^\s*<])\*(?=[\s.,;:!?)]|$)/g, "$1<i>$2</i>");
+      if (lines.every(l => /^\s*[-*] /.test(l))) return "<ul>" + lines.map(l => `<li>${inline(l.replace(/^\s*[-*] /, ""))}</li>`).join("") + "</ul>";
+      return `<p>${lines.map(inline).join("<br>")}</p>`;
+    }).join("");
+  }).join("");
+}
+const pref = { get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+               set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+
+// ------------------------------------------------------------ Python engine (web worker)
+let worker, ready = false, pending = null, jobN = 0;
+function startWorker() {
+  ready = false; setStatus("Loading Python…");
+  worker = new Worker("worker.js");
+  worker.onmessage = ({ data }) => {
+    if (data.type === "ready") { ready = true; setStatus("Ready", true); }
+    else if (data.type === "failed") setStatus("Python failed to load: reload the page");
+    else if (pending && data.id === pending.id) { clearTimeout(pending.timer); pending.resolve(data.res); pending = null; }
+  };
+}
+function setStatus(t, ok) { const s = $("#status"); s.textContent = t; s.className = "status" + (ok ? " ok" : ""); }
+function runJob(job, limitS = 60) {
+  return new Promise(resolve => {
+    job.id = ++jobN;
+    const timer = setTimeout(() => {          // stuck loop: throw the engine away and start a fresh one
+      worker.terminate(); startWorker(); pending = null;
+      resolve({ ok: false, error: `Stopped after ${limitS} s. Look for a loop that never ends.` });
+    }, limitS * 1000);
+    pending = { id: job.id, resolve, timer };
+    worker.postMessage(job);
+  });
+}
+
+// ------------------------------------------------------------ routing: #/python, #/python/2, #/python/2/5, #/python/2/5/1
+const back = $("#back");
+back.onclick = () => {
+  const p = location.hash.slice(2).split("/");
+  location.hash = "#/" + p.slice(0, p.length >= 3 ? 2 : 1).join("/");
+};
+function route() {
+  if (!D) return;
+  let [track = pref.get("track") || "python", ti, ii, vi] = location.hash.slice(2).split("/");
+  if (!D.tracks[track]) track = D.tracks[pref.get("track")] ? pref.get("track") : "python";
+  back.hidden = ti === undefined;
+  window.scrollTo(0, 0);
+  if (ti === undefined) return home(track);
+  if (ii === undefined) return theme(track, +ti);
+  return exercise(track, +ti, +ii, +(vi || 0));
+}
+addEventListener("hashchange", route);
+
+function home(track) {
+  pref.set("track", track);
+  $("#title").textContent = "DS Practice";
+  const themes = D.tracks[track];
+  $("#view").innerHTML = `
+    <div class="seg" role="group">
+      <button aria-pressed="${track === "python"}" data-t="python">Python</button>
+      <button aria-pressed="${track === "sql"}" data-t="sql">SQL</button>
+    </div>
+    <div class="list">${themes.map((t, i) => `
+      <a class="card ${t.theme.startsWith("★") ? "saved" : ""}" href="#/${track}/${i}">
+        <span class="t">${esc(t.theme)}</span><span class="n">${t.items.length}</span><span class="chev">›</span></a>`).join("")}
+    </div>`;
+  $("#view").querySelectorAll("[data-t]").forEach(b => b.onclick = () => { location.hash = "#/" + b.dataset.t; });
+}
+
+function theme(track, ti) {
+  const t = D.tracks[track][ti];
+  $("#title").textContent = t.theme;
+  $("#view").innerHTML = `
+    <p class="sub">${track === "sql" ? "SQL" : "Python"} · ${t.items.length} exercises · each one has similar versions to practise again</p>
+    <div class="list">${t.items.map((it, i) => `
+      <a class="card" href="#/${track}/${ti}/${i}"><span class="num">${i + 1}</span>
+        <span class="t">${esc(it.title)}</span><span class="n">${it.versions.length ? "+" + it.versions.length : ""}</span><span class="chev">›</span></a>`).join("")}
+    </div>`;
+}
+
+// ------------------------------------------------------------ exercise
+function exercise(track, ti, ii, vi) {
+  const th = D.tracks[track][ti], base = th.items[ii];
+  if (!base) { location.hash = `#/${track}/${ti}`; return; }
+  const nv = base.versions.length + 1;
+  vi = Math.min(Math.max(vi, 0), nv - 1);
+  const ex = vi ? { ...base.versions[vi - 1], title: base.title } : base;
+  const lang = track === "sql" ? "sql" : "python";
+  const key = `${track}/${ti}/${ii}/${vi}`;
+  const href = (i, v) => `#/${track}/${ti}/${i}${v ? "/" + v : ""}`;
+  const nextIt = th.items[ii + 1];
+  $("#title").textContent = base.title;
+
+  $("#view").innerHTML = `
+    ${nv > 1 ? `<div class="vbar"><button data-v="${vi - 1}" ${vi ? "" : "disabled"} aria-label="Previous version">‹</button>
+      <span>Version ${vi + 1} of ${nv}${vi ? " · new data" : ""}</span>
+      <button data-v="${vi + 1}" ${vi < nv - 1 ? "" : "disabled"} aria-label="Next similar version">›</button></div>` : ""}
+    <div class="prompt">${md(ex.prompt)}</div>
+    ${ex.at_work ? `<details><summary>At work</summary><div>${md(ex.at_work)}</div></details>` : ""}
+    ${lang === "sql" ? `<details><summary>Tables</summary><div>${schemaHTML()}</div></details>` : ""}
+    <div class="ed">
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Your code"></textarea>
+      <div class="keys" id="keys">${(lang === "sql"
+        ? ["⇥", "*", ",", "(", ")", "'", "=", "<", ">", ";", "_", "."]
+        : ["⇥", "⇤", ":", "(", ")", "[", "]", "{", "}", "'", '"', "=", "_", ".", ",", "#", "+", "-"])
+        .map(k => `<button type="button" data-k="${esc(k)}">${esc(k)}</button>`).join("")}</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="run">Run</button>
+      <button class="btn primary" id="check">Check</button>
+    </div>
+    <div class="out" id="out"></div>
+    <div id="after"></div>
+    <div class="row2">
+      ${(ex.hints || []).length ? `<button class="btn" id="hint">Hint</button>` : ""}
+      <button class="btn" id="sol">Solution</button>
+      <button class="btn" id="reset">Reset</button>
+    </div>
+    <div id="help"></div>
+    <div class="row2" style="margin-top:16px">
+      ${nextIt ? `<a class="btn" href="${href(ii + 1, 0)}">Next exercise ›</a>` : `<a class="btn" href="#/${track}/${ti}">Back to the list</a>`}
+    </div>`;
+
+  $("#view").querySelectorAll("[data-v]").forEach(b => b.onclick = () => { location.hash = href(ii, +b.dataset.v); });
+  const ta = $("#code");
+  ta.value = drafts[key] ?? ex.starter ?? "";
+  ta.oninput = () => { drafts[key] = ta.value; };
+  wireEditor(ta);
+  $("#reset").onclick = () => { ta.value = ex.starter || ""; drafts[key] = ta.value; };
+
+  let shown = 0;
+  const help = $("#help");
+  $("#hint") && ($("#hint").onclick = () => {
+    if (shown < ex.hints.length) help.insertAdjacentHTML("beforeend", `<div class="hint">${md(ex.hints[shown++]).replace(/^<p>|<\/p>$/g, "")}</div>`);
+    if (shown >= ex.hints.length) $("#hint").disabled = true;
+  });
+  const sb = $("#sol");
+  sb.onclick = () => {
+    if (!sb.dataset.armed) { sb.dataset.armed = 1; sb.textContent = "Sure? Tap again"; return; }
+    sb.disabled = true; sb.textContent = "Solution";
+    help.insertAdjacentHTML("beforeend", `<div class="sol">${solHTML(ex)}${ex.explanation ? md(ex.explanation) : ""}</div>`);
+  };
+
+  const out = $("#out");
+  async function go(mode) {
+    if (!ready) out.innerHTML = `<span class="dim">Starting Python (about 10 s the first time)…</span>`;
+    else out.innerHTML = `<span class="dim">${mode === "check" ? "Checking" : "Running"}…</span>`;
+    $("#after").innerHTML = "";
+    $("#run").disabled = $("#check").disabled = true;
+    const job = lang === "sql"
+      ? { lang, seed: D.seed, code: ta.value, solution: mode === "check" ? ex.solution : null, ordered: !!ex.ordered }
+      : { lang, code: ta.value, setup: ex.setup || "", checks: ex.checks || [], mode };
+    // 20 s is plenty for any answer; pandas/numpy need longer the first time they download
+    const res = await runJob(job, /pandas|numpy|pd\.|np\./.test((ex.setup || "") + ta.value) ? 90 : 20);
+    $("#run").disabled = $("#check").disabled = false;
+    out.innerHTML = renderOut(res, lang);
+    if (mode === "check" && res.ok) {
+      $("#after").innerHTML = `<div class="verdict good"><h3>Correct ✓</h3>
+        ${ex.explanation ? md(ex.explanation) : ""}
+        <div class="row2">${vi < nv - 1 ? `<a class="btn primary" href="${href(ii, vi + 1)}">Similar exercise ›</a>` : ""}
+        ${nextIt ? `<a class="btn" href="${href(ii + 1, 0)}">Next exercise ›</a>` : ""}</div></div>`;
+      $("#after").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else out.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  $("#run").onclick = () => go("run");
+  $("#check").onclick = () => go("check");
+}
+
+function solHTML(ex) {
+  if (!ex.solution_steps) return `<p class="lbl">Solution</p><pre>${esc(ex.solution)}</pre>`;
+  return `<p class="lbl">Step by step</p><pre>${esc(ex.solution_steps)}</pre><p class="lbl">Short version (same result)</p><pre>${esc(ex.solution)}</pre>`;
+}
+function schemaHTML() {
+  return D.schema.map(t => `<p style="margin:10px 0 2px"><b>${esc(t.name)}</b> <span class="sub">${t.rows} rows</span><br>
+    <code style="background:none;padding:0">${t.columns.map(c => esc(c[0])).join(", ")}</code></p>`).join("");
+}
+function table(cols, rows) {
+  return `<div class="tbl"><table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join("")}</tr>${rows.map(r =>
+    `<tr>${r.map(v => `<td>${v === null ? '<span class="dim">NULL</span>' : esc(v)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+function renderOut(res, lang) {
+  // On a phone the verdict comes first; the long output goes below in a scrolling box.
+  let h = "";
+  if (res.checks && res.checks.length) {
+    h += `<div style="margin-bottom:8px">${res.checks.map(c => `<div class="chk ${c.passed ? "pass" : "fail"}">${c.passed ? "✓" : "✗"} ${esc(c.label)}
+      ${!c.passed && c.error ? `<small>${esc(c.error)}</small>` : ""}
+      ${!c.passed && c.got !== undefined ? `<small>got ${esc(c.got)}<br>expected ${esc(c.expected)}</small>` : ""}</div>`).join("")}</div>`;
+  }
+  if (res.error) h += `<pre class="err">${esc(res.error)}</pre>`;
+  if (res.stdout) h += `<pre>${esc(res.stdout)}</pre>`;
+  if (lang === "sql" && res.columns) {
+    h += `<div class="dim" style="margin-bottom:4px">Your result: ${res.rowcount} row(s)</div>` + table(res.columns, res.rows);
+  }
+  if (lang === "sql" && res.ok === false && res.expected_preview) {
+    h += `<div class="dim" style="margin:10px 0 4px">Expected (first rows):</div>` + table(res.expected_preview.columns, res.expected_preview.rows);
+  }
+  if (!h) h = `<span class="dim">${res.ok ? "Ran fine, nothing printed. Use print() to see a value." : "No output."}</span>`;
+  return h;
+}
+
+// ------------------------------------------------------------ phone-friendly editor
+function insert(ta, text) {
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.setRangeText(text, s, e, "end");
+  ta.dispatchEvent(new Event("input"));
+}
+function lineStart(ta) { return ta.value.lastIndexOf("\n", ta.selectionStart - 1) + 1; }
+function dedent(ta) {
+  const ls = lineStart(ta), lead = ta.value.slice(ls).match(/^ {1,4}/);
+  if (!lead) return;
+  const pos = ta.selectionStart;
+  ta.setRangeText("", ls, ls + lead[0].length, "preserve");
+  ta.selectionStart = ta.selectionEnd = Math.max(ls, pos - lead[0].length);
+  ta.dispatchEvent(new Event("input"));
+}
+function wireEditor(ta) {
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Tab") { e.preventDefault(); e.shiftKey ? dedent(ta) : insert(ta, "    "); }
+    else if (e.key === "Enter" && !e.isComposing) {     // keep the indentation, add 4 after a ':'
+      e.preventDefault();
+      const line = ta.value.slice(lineStart(ta), ta.selectionStart);
+      const ind = line.match(/^ */)[0] + (/:\s*$/.test(line) ? "    " : "");
+      insert(ta, "\n" + ind);
+    }
+  });
+  $("#keys").querySelectorAll("button").forEach(b => {
+    b.addEventListener("pointerdown", e => e.preventDefault());   // keep the keyboard open
+    b.addEventListener("click", () => {
+      ta.focus();
+      const k = b.dataset.k;
+      if (k === "⇥") insert(ta, "    ");
+      else if (k === "⇤") dedent(ta);
+      else insert(ta, k);
+    });
+  });
+}
+
+// ------------------------------------------------------------ start
+startWorker();
+fetch("data.json").then(r => r.json()).then(d => { D = d; route(); })
+  .catch(() => { $("#view").innerHTML = `<p class="sub">Could not load the exercises. Check your connection and reload.</p>`; });
+</script>
+</body>
+</html>
