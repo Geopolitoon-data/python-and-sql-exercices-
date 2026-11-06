@@ -3,6 +3,10 @@ Python answers are compared with runner.same, SQL results with the PC app's SQL 
 import contextlib
 import io
 import time
+import warnings
+
+# pandas in Pyodide prints a DeprecationWarning about pyarrow on import: noise for a learner
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from runner import clean_tb, same, short
 
