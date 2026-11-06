@@ -245,7 +245,7 @@ function exercise(track, ti, ii, vi) {
     <div class="row2">
       ${(ex.hints || []).length ? `<button class="btn" id="hint">Hint</button>` : ""}
       <button class="btn" id="sol">Solution</button>
-      <button class="btn" id="reset">Reset</button>
+      <button class="btn" id="reset">Clear</button>
     </div>
     <div id="help"></div>
     <div class="row2" style="margin-top:16px">
@@ -254,10 +254,10 @@ function exercise(track, ti, ii, vi) {
 
   $("#view").querySelectorAll("[data-v]").forEach(b => b.onclick = () => { location.hash = href(ii, +b.dataset.v); });
   const ta = $("#code");
-  ta.value = drafts[key] ?? ex.starter ?? "";
+  ta.value = drafts[key] ?? "";   // always start from a blank editor
   ta.oninput = () => { drafts[key] = ta.value; };
   wireEditor(ta);
-  $("#reset").onclick = () => { ta.value = ex.starter || ""; drafts[key] = ta.value; };
+  $("#reset").onclick = () => { ta.value = ""; drafts[key] = ""; ta.focus(); };
 
   let shown = 0;
   const help = $("#help");
